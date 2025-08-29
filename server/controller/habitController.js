@@ -42,6 +42,12 @@ export async function updateHabit(req,res) {
     }
     try {
         const id = req.params.id;
+          const habit = await Habit.findById(id);
+    if (!habit) return res.status(404).json({ success: false, message: "Habit not found" });
+
+    if (habit.userId.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
     const result = await Habit.findByIdAndUpdate(id, req.body, { new: true });
     res.json({ success: true, habit: result });
     } catch (error) {
@@ -57,6 +63,12 @@ export async function deleteHabit(req,res) {
     }
     try {
         const id = req.params.id;
+        const habit = await Habit.findById(id);
+    if (!habit) return res.status(404).json({ success: false, message: "Habit not found" });
+
+    if (habit.userId.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
     const result = await Habit.findByIdAndDelete(id);
     res.json({ success: true, habit: result });
     } catch (error) {

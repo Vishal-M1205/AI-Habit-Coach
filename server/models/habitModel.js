@@ -29,6 +29,10 @@ const habitSchema = new mongoose.Schema({
     createdAt:{
         type : Date,
         default : Date.now
+    },
+    completed :{
+        type : Boolean,
+        default : false
     }
 
 });

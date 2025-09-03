@@ -1,4 +1,4 @@
-# 🧠 AI Habit Coach
+# 🧠 AI Habit Coach (yet to complete)
 
 AI Habit Coach is a MERN-based application designed to help users build better habits. It supports CRUD operations for managing habits, progress tracking with charts, and an AI-powered chatbot to discuss habits and get personalized guidance.
 
@@ -26,6 +26,8 @@ AI Habit Coach is a MERN-based application designed to help users build better h
   <img src="screenshots/1.png" alt="Screenshot 1" width="250"/>
   <img src="screenshots/2.png" alt="Screenshot 2" width="250"/>
   <img src="screenshots/3.png" alt="Screenshot 3" width="250"/>
+  <img src="screenshots/4.png" alt="Screenshot 3" width="250"/>
+  <img src="screenshots/5.png" alt="Screenshot 3" width="250"/>
 </p>
 
 

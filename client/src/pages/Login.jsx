@@ -1,13 +1,26 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-
+import  {  toast } from 'react-toastify';
+import axios from 'axios';
 const Login = () => {
     const [signUp, setSignUp] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const loginHandler = (e) => {
+    const loginHandler = async (e) => {
         e.preventDefault();
-        navigate('/dashboard');
-        // Handle login logic here
+        try {
+           const response = await axios.post('http://localhost:3500/api/user/login', { email, password });
+          const data = response.data;
+          if (data.success === true) {
+              toast.success('Login successful!');
+              navigate('/dashboard');
+          } else {
+              toast.error(data.message);
+          }
+        } catch (error) {
+           toast.error('An error occurred. Please try again.');
+        }
     }
     const signUpHandler = (e) => {
         e.preventDefault();
@@ -44,11 +57,11 @@ const Login = () => {
     <form onSubmit={loginHandler} className='flex flex-col items-center justify-center mt-10'>
      <div className='flex items-center justify-center bg-gray-300 rounded-full '>
        
-        <input type="email" placeholder="Email" className='border-none p-2 rounded-full   max-w-xs' />
+        <input onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className='border-none p-2 rounded-full   max-w-xs' />
         </div> 
      <div className='flex items-center justify-center mt-2  bg-gray-300 rounded-full '>
-       
-         <input type="password" placeholder="Password" className='border-none p-2 rounded-full  max-w-xs' />
+
+         <input onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className='border-none p-2 rounded-full  max-w-xs' />
         </div> 
      
       <button type="submit" className='bg-gradient-to-l from-blue-400 to-green-400 text-white text-lg w-full  py-2 px-4 rounded-full mt-6'>Login</button>

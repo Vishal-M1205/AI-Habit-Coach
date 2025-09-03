@@ -1,9 +1,18 @@
 import React, { useState } from 'react'
 import MyHabits from './MyHabits';
-
+import Progress from './Progress';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
 const [activeTab, setActiveTab] = useState('dashboard');
+const navigate = useNavigate();
+ const habitData = [
+    { date: "2025-09-01", progress: 20 },
+    { date: "2025-09-02", progress: 40 },
+    { date: "2025-09-03", progress: 60 },
+    { date: "2025-09-04", progress: 80 },
+    { date: "2025-09-05", progress: 100 },
+  ];
   return (
     <div>
        <div className='w-60 bg-white top-0 bottom-0 shadow-md min-h-screen flex flex-col items-start jutify-center fixed'>
@@ -43,10 +52,10 @@ const [activeTab, setActiveTab] = useState('dashboard');
 
         </div>
         <div className='px-7 py-4 flex flex-row items-center justify-center gap-3'>
-           <button className='bg-blue-500 hover:bg-blue-600 text-white px-4 text-2xl w-sm py-4 rounded-full shadow-lg shadow-gray-400'>
+           <button className='bg-blue-500 hover:bg-blue-600 text-white px-4 text-2xl w-sm py-4 rounded-full shadow-lg shadow-gray-400' onClick={() => setActiveTab('myHabits')} >
             Add Habit +
            </button>
-           <button className='bg-green-500 hover:bg-green-600 text-white px-4 text-2xl w-sm py-4 rounded-full shadow-lg shadow-gray-400' >
+           <button className='bg-green-500 hover:bg-green-600 text-white px-4 text-2xl w-sm py-4 rounded-full shadow-lg shadow-gray-400' onClick={() => setActiveTab('progress')} >
             ⇆ View Progress
            </button>
            <button className='bg-violet-500 hover:bg-violet-600 text-white px-4 text-2xl w-sm py-4 rounded-full shadow-lg shadow-gray-400'>
@@ -69,7 +78,7 @@ const [activeTab, setActiveTab] = useState('dashboard');
         </div>
       </div>}
       {activeTab === 'myHabits' && <MyHabits />}
-      {activeTab === 'progress' && <h1>Progress Content</h1>}
+      {activeTab === 'progress' && <Progress habitData={habitData} />}
       {activeTab === 'aiCoach' && <h1>AI Coach Content</h1>}
       {activeTab === 'settings' && <h1>Settings Content</h1>}
       </div>

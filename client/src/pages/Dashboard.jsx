@@ -1,11 +1,51 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import MyHabits from './MyHabits';
 import Progress from './Progress';
 import { useNavigate } from 'react-router-dom';
+import { Appcontext } from '../context/Appcontext';
+import axios from 'axios';
+
 
 const Dashboard = () => {
 const [activeTab, setActiveTab] = useState('dashboard');
-const navigate = useNavigate();
+const [habits,setHabits] = useState([]);
+const {login,token} = useContext(Appcontext);
+const [stats,setStats] = useState({totalDays:0,today:0,weekProgress:0});
+const getStats = async () =>{
+  try {
+    const response = await axios.post('http://localhost:3500/api/habit/getDashboardStats',{},{
+      headers:{
+        token: token
+      }
+      
+    } );
+    const data = response.data;
+    if(data.success){
+      setStats(data.stats);
+    }
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+  }
+}
+const getHabits = async () =>{
+  try {
+    const response = await axios.post('http://localhost:3500/api/habit/getHabits',{},{
+      headers:{
+        token: token
+      }
+    });
+    const data = response.data;
+    if(data.success){
+      setHabits(data.habits);
+    }
+  } catch (error) {
+    console.error("Error fetching habits:", error);
+  }
+}
+useEffect(() => {
+getHabits();
+getStats();
+},[token])
  const habitData = [
     { date: "2025-09-01", progress: 20 },
     { date: "2025-09-02", progress: 40 },
@@ -14,7 +54,8 @@ const navigate = useNavigate();
     { date: "2025-09-05", progress: 100 },
   ];
   return (
-    <div>
+    <>
+      {login === false ? <h1 className='text-3xl font-bold text-center pt-20'>Please login to access the dashboard.</h1> : <div>
        <div className='w-60 bg-white top-0 bottom-0 shadow-md min-h-screen flex flex-col items-start jutify-center fixed'>
    <div className='flex justify-center items-center'>
      <img src="target.png" alt="" className='ml-5 mt-5 h-10 w-10 ' />
@@ -38,15 +79,15 @@ const navigate = useNavigate();
         </div>
         <div className='flex flex-row items-center justify-center gap-2 px-7 py-4'>
               <div className='bg-white shadow-lg flex flex-col items-center justify-center shadow-gray-400 rounded-2xl p-4 h-36 w-sm'>
-                          <h1 className='text-2xl font-bold text-blue-500'>12</h1>
+                          <h1 className='text-2xl font-bold text-blue-500'>{stats.totalDays}</h1>
                           <p className='text-gray-400'>Days</p>
               </div>
               <div className='bg-white shadow-lg flex flex-col items-center justify-center  shadow-gray-400 rounded-2xl p-4 h-36 w-sm'>
-                        <h1 className='text-2xl font-bold text-green-500'>3/5</h1>
+                        <h1 className='text-2xl font-bold text-green-500'>{stats.today}</h1>
                         <p className='text-gray-400'>Today's Habits</p>
               </div>
               <div className='bg-white shadow-lg flex flex-col items-center justify-center  shadow-gray-400 rounded-2xl p-4 h-36 w-sm'>
-                        <h1 className='text-2xl font-bold text-violet-500'>85%</h1>
+                        <h1 className='text-2xl font-bold text-violet-500'>{stats.weekProgress}</h1>
                         <p className='text-gray-400'>This Week</p>
               </div>
 
@@ -63,15 +104,25 @@ const navigate = useNavigate();
            </button>
         </div>
         <div className='bg-white w-6xl shadow-lg shadow-gray-400 rounded-2xl p-6 my-4'>
-          <h1 className='text-2xl font-bold pb-3 px-2'>Today's Habits</h1>
-          <ul >
-            <li className='max-w-full flex items-center justify-between bg-gray-200 px-10 text-xl my-2 rounded-4xl py-3'>Habit 1 <button className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full'>
-              Done</button> </li>
-            <li className='max-w-full flex items-center justify-between bg-gray-200 px-10 text-xl my-2 rounded-4xl py-3'>Habit 2 <button className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full'>
-              Done</button> </li>
-            <li className='max-w-full flex items-center justify-between bg-gray-200 px-10 text-xl my-2 rounded-4xl py-3'>Habit 3 <button className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full'>
-              Done</button> </li>
-          </ul>
+          <h1 className='text-2xl font-bold pb-3 px-2'>Today's Habits</h1>{
+            habits.length === 0 ?( <p className='text-gray-400 px-2'>No habits for today. Add some habits to get started!</p>
+            ) : ( <ul>
+
+           {habits.map((habit) => (
+      <li
+        key={habit._id}
+        className='max-w-full flex items-center justify-between bg-gray-200 px-10 text-xl my-2 rounded-4xl py-3'
+      >
+        {habit.title}
+        <button className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full'>
+          Done
+        </button>
+      </li>
+    ))}
+          </ul>)
+
+          }
+         
         </div>
         <div>
           
@@ -83,7 +134,9 @@ const navigate = useNavigate();
       {activeTab === 'settings' && <h1>Settings Content</h1>}
       </div>
       
-    </div>
+    </div>}
+    </>
+    
   )
 }
 

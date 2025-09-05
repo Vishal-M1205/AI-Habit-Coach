@@ -33,7 +33,11 @@ const habitSchema = new mongoose.Schema({
     completed :{
         type : Boolean,
         default : false
-    }
+    },
+    completionDates: [{
+  type: Date
+}]
+
 
 });
 const Habit = mongoose.model('Habit',habitSchema);

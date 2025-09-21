@@ -30,10 +30,7 @@ const habitSchema = new mongoose.Schema({
         type : Date,
         default : Date.now
     },
-    completed :{
-        type : Boolean,
-        default : false
-    },
+   
     completionDates: [{
   type: Date
 }]

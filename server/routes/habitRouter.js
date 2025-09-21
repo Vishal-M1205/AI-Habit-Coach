@@ -1,5 +1,5 @@
 import express from 'express';
-import { addHabit, deleteHabit, getHabits, updateHabit , completeHabit, getDashboardStats} from '../controller/habitController.js';
+import { addHabit, deleteHabit, getHabits, updateHabit , completeHabit, getDashboardStats, chart} from '../controller/habitController.js';
 
 const habitRouter = express.Router();
 
@@ -9,5 +9,6 @@ habitRouter.post('/updateHabit/:id',updateHabit);
 habitRouter.post('/deleteHabit/:id',deleteHabit);
 habitRouter.post('/completeHabit',completeHabit);
 habitRouter.post('/getDashboardStats',getDashboardStats);
+habitRouter.post('/chart',chart);
 
 export default habitRouter;

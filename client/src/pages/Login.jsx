@@ -11,11 +11,7 @@ const Login = () => {
     const [name, setName] = useState('');
     const {token,setToken,setLogin} = useContext(Appcontext);
     const navigate = useNavigate();
-    useEffect(() => {
-  if (token) {
-    console.log("Token updated:", token);
-  }
-}, [token]);
+    
 
     const loginHandler = async (e) => {
         e.preventDefault();

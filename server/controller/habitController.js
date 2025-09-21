@@ -30,14 +30,26 @@ export async function addHabit(req, res) {
 
 
 export async function getHabits(req, res) {
-  const userId = req.user?.id;  // ✅ use req.user.id from auth middleware
+  const userId = req.user?.id; // from auth middleware
   if (!userId) {
     return res.json({ success: false, message: "User ID is required" });
   }
 
   try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const habits = await Habit.find({ userId });
-    res.json({ success: true, habits });
+
+    // Add 'completed' field dynamically based on today's date
+    const enrichedHabits = habits.map(habit => {
+      const completedToday = habit.completionDates.some(
+        d => new Date(d).setHours(0, 0, 0, 0) === today.getTime()
+      );
+      return { ...habit.toObject(), completed: completedToday };
+    });
+
+    res.json({ success: true, habits: enrichedHabits });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -87,7 +99,7 @@ export async function deleteHabit(req,res) {
 }
 
 export async function completeHabit(req, res) {
-  const userId = req.user?.id;  // ✅ get from token
+  const userId = req.user?.id;  // get from token
   const { habitId } = req.body;
 
   if (!userId || !habitId) {
@@ -107,7 +119,7 @@ export async function completeHabit(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // If already completed today, skip
+    // Check if already completed today
     const alreadyDone = habit.completionDates.some(
       d => new Date(d).setHours(0, 0, 0, 0) === today.getTime()
     );
@@ -115,10 +127,10 @@ export async function completeHabit(req, res) {
       return res.json({ success: false, message: "Already completed today" });
     }
 
-    // Push today's completion
+    // Add today's completion
     habit.completionDates.push(new Date());
 
-    // Streak logic
+    // Update streak
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
@@ -127,7 +139,8 @@ export async function completeHabit(req, res) {
     );
 
     habit.streak = hadYesterday ? habit.streak + 1 : 1;
-    habit.completed = true; // quick check
+
+    // ✅ Removed habit.completed entirely
 
     await habit.save();
 
@@ -193,3 +206,50 @@ export async function getDashboardStats(req, res) {
     res.json({ success: false, message: error.message });
   }
 }
+
+
+
+
+export const chart = async (req, res) => {
+  try {
+    const userId = req.user?.id; 
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId is required",
+      });
+    }
+
+    const habits = await Habit.find({ userId });
+
+    // Collect all completion dates
+    const progressMap = {};
+
+    habits.forEach((habit) => {
+      habit.completionDates.forEach((date, idx) => {
+        const d = new Date(date).toISOString().split("T")[0]; // YYYY-MM-DD
+        if (!progressMap[d]) progressMap[d] = [];
+        // Calculate habit's progress percentage on that day
+        const progress = Math.min(((idx + 1) / habit.completionDates.length) * 100, 100);
+        progressMap[d].push(progress);
+      });
+    });
+
+    // Average progress per day across all habits
+    const overallChart = Object.entries(progressMap).map(([date, progresses]) => {
+      const avgProgress = progresses.reduce((a, b) => a + b, 0) / progresses.length;
+      return { date, progress: Math.round(avgProgress) };
+    });
+
+    // Sort by date
+    overallChart.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    res.json({ success: true, overall: overallChart });
+  } catch (error) {
+    console.error("Error fetching overall progress:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+

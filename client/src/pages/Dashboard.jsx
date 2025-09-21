@@ -1,16 +1,53 @@
 import React, { useContext, useEffect, useState } from 'react'
 import MyHabits from './MyHabits';
 import Progress from './Progress';
-import { useNavigate } from 'react-router-dom';
 import { Appcontext } from '../context/Appcontext';
 import axios from 'axios';
+
+
 
 
 const Dashboard = () => {
 const [activeTab, setActiveTab] = useState('dashboard');
 const [habits,setHabits] = useState([]);
+const [habitData,setHabitData] = useState([]);
 const {login,token} = useContext(Appcontext);
 const [stats,setStats] = useState({totalDays:0,today:0,weekProgress:0});
+
+const habitComplete =async (habitId) =>{
+try {
+  const response = await axios.post('http://localhost:3500/api/habit/completeHabit',{habitId},{
+    headers:{
+      token: token
+    }});
+    const data = response.data;
+    if(data.success){
+      getHabits();
+      getStats();
+    }
+} catch (error) {
+  console.error("Error completing habit:", error);
+}
+
+}
+
+const getChart = async () =>{ 
+  try {
+    const response = await axios.post('http://localhost:3500/api/habit/chart',{},{
+      headers:{
+        token: token
+      }
+    });
+    const data = response.data;
+    if(data.success){
+      setHabitData(data.overall);
+    }
+  } catch (error) {
+    
+  }
+}
+
+
 const getStats = async () =>{
   try {
     const response = await axios.post('http://localhost:3500/api/habit/getDashboardStats',{},{
@@ -45,14 +82,9 @@ const getHabits = async () =>{
 useEffect(() => {
 getHabits();
 getStats();
-},[token])
- const habitData = [
-    { date: "2025-09-01", progress: 20 },
-    { date: "2025-09-02", progress: 40 },
-    { date: "2025-09-03", progress: 60 },
-    { date: "2025-09-04", progress: 80 },
-    { date: "2025-09-05", progress: 100 },
-  ];
+getChart();
+},[token]);
+
   return (
     <>
       {login === false ? <h1 className='text-3xl font-bold text-center pt-20'>Please login to access the dashboard.</h1> : <div>
@@ -111,10 +143,10 @@ getStats();
            {habits.map((habit) => (
       <li
         key={habit._id}
-        className='max-w-full flex items-center justify-between bg-gray-200 px-10 text-xl my-2 rounded-4xl py-3'
+        className={ habit.completed ? 'max-w-full flex items-center line-through  justify-between text-gray-200 bg-gray-400 px-10 text-xl my-2 rounded-4xl py-3' : 'max-w-full flex items-center justify-between bg-gray-200 px-10 text-xl my-2 rounded-4xl py-3'}
       >
         {habit.title}
-        <button className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full'>
+        <button onClick={() => habitComplete(habit._id)} className={habit.completed ? 'hidden':'bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full'}>
           Done
         </button>
       </li>

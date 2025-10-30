@@ -15,7 +15,7 @@ export async function handleResponse(req,res){
         }
         const prompt = `
         User prompt: ${req.body.prompt}
-        User habits: ${habit.map(h => `${h.title} (${h.frequency}): ${h.description}`).join("\n")}
+        User habits: ${habit.map(h => `${h.title} (Progress: ${h.progress}) - Streak: ${h.streak} Created at ${h.createdAt}`).join("\n")}
         `;
         const response = await generateResponse(prompt);
         return res.json({success:true,message:"Response generated successfully",data:response});

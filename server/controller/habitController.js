@@ -252,4 +252,77 @@ export const chart = async (req, res) => {
   }
 };
 
+export async function getHabitStats(req, res) {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.json({ success: false, message: "User ID required" });
+  }
+
+  try {
+    const habits = await Habit.find({ userId });
+
+    if (!habits.length) {
+      return res.json({
+        success: true,
+        stats: { currentStreak: 0, totalCompleted: 0, successRate: "0%" }
+      });
+    }
+
+    // ---- Total Completed ----
+    let totalCompleted = 0;
+    habits.forEach(habit => {
+      totalCompleted += habit.completionDates.length;
+    });
+
+    // ---- Current Streak ----
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let streakDay = new Date(today);
+
+    while (true) {
+      const dayCompleted = habits.every(habit =>
+        habit.completionDates.some(
+          d => new Date(d).setHours(0, 0, 0, 0) === streakDay.getTime()
+        )
+      );
+
+      if (dayCompleted) {
+        currentStreak++;
+        streakDay.setDate(streakDay.getDate() - 1); // check previous day
+      } else {
+        break;
+      }
+    }
+
+    // ---- Success Rate ----
+    // success rate = (completed days / total possible days * habits) * 100
+    const firstHabitDate = new Date(
+      Math.min(...habits.map(h => h.createdAt.getTime()))
+    );
+    const totalDays =
+      Math.floor((today.getTime() - firstHabitDate.getTime()) / (1000 * 60 * 60 * 24)) +
+      1;
+
+    const totalPossible = totalDays * habits.length;
+    const successRate =
+      totalPossible > 0
+        ? ((totalCompleted / totalPossible) * 100).toFixed(1) + "%"
+        : "0%";
+
+    res.json({
+      success: true,
+      stats: {
+        currentStreak,
+        totalCompleted,
+        successRate
+      }
+    });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+}
+
+
 

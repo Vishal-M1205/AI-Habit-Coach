@@ -9,9 +9,9 @@ import axios from 'axios';
 
 const Dashboard = () => {
 const [activeTab, setActiveTab] = useState('dashboard');
-const [habits,setHabits] = useState([]);
+
 const [habitData,setHabitData] = useState([]);
-const {login,token} = useContext(Appcontext);
+const {login,token,newHabit,habits,setHabits} = useContext(Appcontext);
 const [stats,setStats] = useState({totalDays:0,today:0,weekProgress:0});
 
 const habitComplete =async (habitId) =>{
@@ -83,7 +83,7 @@ useEffect(() => {
 getHabits();
 getStats();
 getChart();
-},[token]);
+},[token,newHabit,habits]);
 
   return (
     <>

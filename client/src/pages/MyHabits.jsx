@@ -8,8 +8,8 @@ import { toast } from 'react-toastify';
 
 const MyHabits = () => {
 const [habits, setHabits] = useState([]);
-const [newHabit, setNewHabit] = useState('');
-const {token} = useContext(Appcontext);
+
+const {token,newHabit,setNewHabit} = useContext(Appcontext);
  async function handleAddHabit() {
     try {
       const response = await axios.post("http://localhost:3500/api/habit/addHabit",{

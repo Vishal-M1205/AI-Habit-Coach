@@ -2,13 +2,14 @@ import { generateResponse } from "../services/googleApi.js";
 import Habit from "../models/habitModel.js";
 
 export async function handleResponse(req,res){
-    const userId = req.body.userId;
+    const userId = req.user?.id;
+
     if(!userId){
-        res.json({success:false,message:"Invalid user ID"})
+        return res.json({success:false,message:"Invalid user ID"});
     }
     try {
         const habit = await Habit.find({userId});
-        console.log(habit);
+        
         if(!habit){
            
             return res.json({success:false,message:"No habit found for this user"});

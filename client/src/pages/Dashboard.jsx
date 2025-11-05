@@ -3,6 +3,7 @@ import MyHabits from './MyHabits';
 import Progress from './Progress';
 import { Appcontext } from '../context/Appcontext';
 import axios from 'axios';
+import ChatPage from './ChatPage';
 
 
 
@@ -162,7 +163,7 @@ getChart();
       </div>}
       {activeTab === 'myHabits' && <MyHabits />}
       {activeTab === 'progress' && <Progress habitData={habitData} />}
-      {activeTab === 'aiCoach' && <h1>AI Coach Content</h1>}
+      {activeTab === 'aiCoach' && <h1><ChatPage/></h1>}
       {activeTab === 'settings' && <h1>Settings Content</h1>}
       </div>
       

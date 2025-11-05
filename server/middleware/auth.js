@@ -3,7 +3,9 @@ import jwt from 'jsonwebtoken';
 export async function auth(req, res, next) {
   const token = req.headers['token']; // safer way to read header
   if (!token) {
+    console.log(token);
     return res.json({ success: false, message: "No token provided" });
+    
   }
 
   try {

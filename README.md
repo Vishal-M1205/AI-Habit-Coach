@@ -28,6 +28,9 @@ AI Habit Coach is a MERN-based application designed to help users build better h
   <img src="screenshots/3.png" alt="Screenshot 3" width="250"/>
   <img src="screenshots/4.png" alt="Screenshot 3" width="250"/>
   <img src="screenshots/5.png" alt="Screenshot 3" width="250"/>
+  <img src="screenshots/6.png" alt="Screenshot 3" width="250"/>
+  <img src="screenshots/7.png" alt="Screenshot 3" width="250"/>
+  <img src="screenshots/8.png" alt="Screenshot 3" width="250"/>
 </p>
 
 

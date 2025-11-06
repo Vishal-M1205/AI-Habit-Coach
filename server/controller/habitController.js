@@ -168,19 +168,31 @@ export async function getDashboardStats(req, res) {
     }
 
     const today = new Date().setHours(0, 0, 0, 0);
-    const weekAgo = new Date(today);
-    weekAgo.setDate(weekAgo.getDate() - 6);
+    const todayDate = new Date(today);
+    const weekAgoDate = new Date(today);
+    weekAgoDate.setDate(weekAgoDate.getDate() - 6);
 
     let uniqueDays = new Set();
     let todayCompleted = 0;
     let todayTotal = habits.length;
     let weekCompleted = 0;
-    let weekTotal = habits.length * 7;
+    let weekTotal = 0;
 
     habits.forEach(habit => {
+      const habitCreatedDate = new Date(habit.createdAt).setHours(0, 0, 0, 0);
+
+      // Calculate how many days this habit existed in the last week
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(weekAgoDate);
+        day.setDate(day.getDate() + i);
+        if (day.getTime() >= habitCreatedDate) {
+          weekTotal++;
+        }
+      }
+
       habit.completionDates.forEach(d => {
         const day = new Date(d).setHours(0, 0, 0, 0);
-        if (day >= weekAgo.getTime() && day <= today) {
+        if (day >= weekAgoDate.getTime() && day <= today) {
           weekCompleted++;
         }
         uniqueDays.add(day);
@@ -192,7 +204,7 @@ export async function getDashboardStats(req, res) {
     });
 
     const totalDays = uniqueDays.size;
-    const weekProgress = ((weekCompleted / weekTotal) * 100).toFixed(0);
+    const weekProgress = weekTotal > 0 ? ((weekCompleted / weekTotal) * 100).toFixed(0) : 0;
 
     res.json({
       success: true,
@@ -223,23 +235,52 @@ export const chart = async (req, res) => {
 
     const habits = await Habit.find({ userId });
 
-    // Collect all completion dates
-    const progressMap = {};
+    if (!habits.length) {
+      return res.json({ success: true, overall: [] });
+    }
+
+    const dailyData = {};
 
     habits.forEach((habit) => {
-      habit.completionDates.forEach((date, idx) => {
-        const d = new Date(date).toISOString().split("T")[0]; // YYYY-MM-DD
-        if (!progressMap[d]) progressMap[d] = [];
-        // Calculate habit's progress percentage on that day
-        const progress = Math.min(((idx + 1) / habit.completionDates.length) * 100, 100);
-        progressMap[d].push(progress);
+      const habitCreatedDate = new Date(habit.createdAt);
+      habitCreatedDate.setUTCHours(0, 0, 0, 0);
+
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      // For each day the habit existed, increment the total possible for that day
+      for (let d = new Date(habitCreatedDate); d <= today; d.setUTCDate(d.getUTCDate() + 1)) {
+        const dateStr = d.toISOString().split("T")[0];
+        if (!dailyData[dateStr]) {
+          dailyData[dateStr] = { completed: 0, total: 0 };
+        }
+        dailyData[dateStr].total++;
+      }
+
+      // For each completion, increment the completed count for that day
+      habit.completionDates.forEach((date) => {
+        const completionDate = new Date(date);
+        const dateStr = completionDate.toISOString().split("T")[0];
+        if (dailyData[dateStr]) {
+          dailyData[dateStr].completed++;
+        }
       });
     });
 
-    // Average progress per day across all habits
-    const overallChart = Object.entries(progressMap).map(([date, progresses]) => {
-      const avgProgress = progresses.reduce((a, b) => a + b, 0) / progresses.length;
-      return { date, progress: Math.round(avgProgress) };
+    // Format for chart
+    const overallChart = Object.entries(dailyData).map(([date, data]) => {
+      const percentage = data.total > 0 ? (data.completed / data.total) * 100 : 0;
+      let level = 0;
+      if (percentage > 0 && percentage < 34) level = 1;
+      else if (percentage >= 34 && percentage < 67) level = 2;
+      else if (percentage >= 67 && percentage < 100) level = 3;
+      else if (percentage === 100) level = 4;
+
+      return { 
+        date, 
+        count: data.completed, // How many habits were completed
+        level // The intensity level for the heatmap
+      };
     });
 
     // Sort by date
@@ -274,47 +315,31 @@ export async function getHabitStats(req, res) {
       totalCompleted += habit.completionDates.length;
     });
 
-    // ---- Current Streak ----
-    let currentStreak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let streakDay = new Date(today);
-
-    while (true) {
-      const dayCompleted = habits.every(habit =>
-        habit.completionDates.some(
-          d => new Date(d).setHours(0, 0, 0, 0) === streakDay.getTime()
-        )
-      );
-
-      if (dayCompleted) {
-        currentStreak++;
-        streakDay.setDate(streakDay.getDate() - 1); // check previous day
-      } else {
-        break;
-      }
-    }
+    // ---- Best Streak (among all habits) ----
+    const bestStreak = Math.max(0, ...habits.map(h => h.streak));
 
     // ---- Success Rate ----
-    // success rate = (completed days / total possible days * habits) * 100
-    const firstHabitDate = new Date(
-      Math.min(...habits.map(h => h.createdAt.getTime()))
-    );
-    const totalDays =
-      Math.floor((today.getTime() - firstHabitDate.getTime()) / (1000 * 60 * 60 * 24)) +
-      1;
+    const today = new Date().setHours(0, 0, 0, 0);
+    let totalPossible = 0;
 
-    const totalPossible = totalDays * habits.length;
+    habits.forEach(habit => {
+        const habitCreatedDate = new Date(habit.createdAt).setHours(0, 0, 0, 0);
+        if (habitCreatedDate <= today) {
+            const daysSinceCreation = 
+                Math.floor((today - habitCreatedDate) / (1000 * 60 * 60 * 24)) + 1;
+            totalPossible += daysSinceCreation;
+        }
+    });
+
     const successRate =
       totalPossible > 0
-        ? ((totalCompleted / totalPossible) * 100).toFixed(1) + "%"
+        ? ((totalCompleted / totalPossible) * 100).toFixed(0) + "%"
         : "0%";
 
     res.json({
       success: true,
       stats: {
-        currentStreak,
+        currentStreak: bestStreak, // Changed from a "perfect" streak to the best individual streak
         totalCompleted,
         successRate
       }
@@ -323,6 +348,3 @@ export async function getHabitStats(req, res) {
     res.json({ success: false, message: error.message });
   }
 }
-
-
-

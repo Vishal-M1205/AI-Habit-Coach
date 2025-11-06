@@ -24,7 +24,8 @@ const ChatPage = () => {
 
         try {
             const response = await axios.post('http://localhost:3500/api/coach/response', {
-                prompt: userMessage.content
+                prompt: userMessage.content,
+                history: [...resp, userMessage]
             }, {
                 headers: {
                     token: token
@@ -57,7 +58,7 @@ const ChatPage = () => {
   <h1 className='text-5xl bg-gradient-to-b from-green-400 to-blue-400 bg-clip-text  text-transparent font-bold'>AI Chatbot</h1>
       </div>
       <div className='bg-white rounded-2xl shadow-grey-400 ml-10 mr-10  shadow-2xl p-5 mt-10 h-fit'>
-         <div className='bg-blue-100 h-96 rounded-2xl overflow-y-auto p-4'>
+         <div className='bg-blue-100  h-120 rounded-2xl overflow-y-auto p-4'>
            <div className='flex flex-col'>
                         {resp.map((item, index) => {
                             if (item.role === "model") {
@@ -88,13 +89,18 @@ const ChatPage = () => {
            </div>
          </div>
          <div className=' w-full bg-green-300 mb-3 mt-2  pl-3 py-2 rounded-full h-auto    flex items-center'>
-                 <input type="text" name="" id="" placeholder='Enter your prompt...' className='bg-white py-2 px-4 h-auto rounded-full w-11/12' value={prompt} disabled={isLoading} onChange={(e)=>{
+                 <input type="text" name="" id="" placeholder='Enter your prompt...' className='bg-white py-2 px-4 h-auto rounded-full w-11/12' value={prompt} disabled={isLoading} onKeyDown={(e)=>{
+                    if(e.key === 'Enter' && !isLoading){
+                        e.preventDefault();
+                        getResponse();
+                    }
+                 }} onChange={(e)=>{
                     setPrompt(e.target.value);
                  }}/>
-                 <button className='text-xl px-3 py-2 mx-2 bg-blue-400 rounded-full  text-white' onClick={()=>{
-                    getResponse();
-
-                    
+                 <button className='text-xl px-3 py-2 mx-2 bg-blue-400 rounded-full  text-white'  onClick={()=>{
+                    if(!isLoading){
+                        getResponse();
+                    }
                  }}>
                     Send
                  </button>

@@ -3,6 +3,7 @@ import MyHabits from './MyHabits';
 import Progress from './Progress';
 import { Appcontext } from '../context/Appcontext';
 import axios from 'axios';
+import AboutPage from './SettingsPage';
 import ChatPage from './ChatPage';
 
 
@@ -42,6 +43,7 @@ const getChart = async () =>{
     const data = response.data;
     if(data.success){
       setHabitData(data.overall);
+      
     }
   } catch (error) {
     
@@ -75,6 +77,7 @@ const getHabits = async () =>{
     const data = response.data;
     if(data.success){
       setHabits(data.habits);
+     
     }
   } catch (error) {
     console.error("Error fetching habits:", error);
@@ -99,7 +102,7 @@ getChart();
       <button onClick={()=> setActiveTab('myHabits')} className={`mx-10 mb-5 py-2  rounded-full px-5 ${activeTab === 'myHabits' ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white' : 'text-gray-500'}`}>My Habits</button>
       <button onClick={()=> setActiveTab('progress')} className={`mx-10 mb-5 py-2  rounded-full px-5 ${activeTab === 'progress' ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white' : 'text-gray-500'}`}>Progress</button>
       <button onClick={()=> setActiveTab('aiCoach')} className={`mx-10 mb-5 py-2  rounded-full px-5 ${activeTab === 'aiCoach' ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white' : 'text-gray-500'}`}>AI Coach</button>
-      <button onClick={()=> setActiveTab('settings')} className={`mx-10 mb-5 py-2  rounded-full px-5 ${activeTab === 'settings' ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white' : 'text-gray-500'}`}>Settings</button>
+      <button onClick={()=> setActiveTab('about')} className={`mx-10 mb-5 py-2  rounded-full px-5 ${activeTab === 'about' ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white' : 'text-gray-500'}`}>About</button>
 
 
     </div>
@@ -164,7 +167,7 @@ getChart();
       {activeTab === 'myHabits' && <MyHabits />}
       {activeTab === 'progress' && <Progress habitData={habitData} />}
       {activeTab === 'aiCoach' && <h1><ChatPage/></h1>}
-      {activeTab === 'settings' && <h1>Settings Content</h1>}
+      {activeTab === 'about' && <AboutPage />}
       </div>
       
     </div>}

@@ -1,5 +1,5 @@
 import React, { useEffect,useContext, useState } from 'react'
-import LineChart from '../components/LineChart'
+import CalendarHeatmapChart from '../components/CalendarHeatmap'
 import axios from 'axios';
 import { Appcontext } from '../context/Appcontext';
 
@@ -45,7 +45,7 @@ useEffect(()=>{
         </div>
       </div>
       <div className='w-full flex justify-center m-auto h-5xl'>
-        <LineChart habitData={habitData} />
+        {habitData && habitData.length > 0 && <CalendarHeatmapChart habitData={habitData} />}
       </div>
       
     </div>
